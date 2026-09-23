@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "GoTogether",
+    "slug": "gotogether",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#f5f9ff" },
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#f5f9ff" } }
+  }
+}

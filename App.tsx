@@ -1,0 +1,750 @@
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+
+type RootStackParamList = {
+  Home: undefined;
+  Setup: undefined;
+  Matches: undefined;
+};
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const blue = "#1769e8";
+const navy = "#081a44";
+const muted = "#62758f";
+const bg = "#f5f9ff";
+
+function Logo() {
+  return <Text style={styles.logo}>GoTogether</Text>;
+}
+
+function Button({
+  label,
+  onPress,
+  secondary = false,
+}: {
+  label: string;
+  onPress: () => void;
+  secondary?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.button, secondary && styles.secondaryButton]}
+    >
+      <Text style={[styles.buttonText, secondary && styles.secondaryText]}>
+        {label}
+      </Text>
+      <Ionicons
+        name="arrow-forward"
+        size={19}
+        color={secondary ? blue : "#fff"}
+      />
+    </Pressable>
+  );
+}
+
+function HomeScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.home}>
+        <View style={styles.topline}>
+          <Logo />
+          <Pressable style={styles.avatar}>
+            <Ionicons name="person" size={18} color={blue} />
+          </Pressable>
+        </View>
+        <View style={styles.hero}>
+          <View style={styles.cloud} />
+          <Text style={styles.eyebrow}>SHARE THE WAY</Text>
+          <Text style={styles.heroTitle}>
+            Better rides.{`\n`}Brighter days.
+          </Text>
+          <Text style={styles.heroCopy}>
+            Find people going your way and make every commute better together.
+          </Text>
+          <View style={styles.road}>
+            <View style={styles.car}>
+              <MaterialCommunityIcons
+                name="car-hatchback"
+                size={48}
+                color={blue}
+              />
+            </View>
+            <View style={styles.sign}>
+              <Text style={styles.signText}>Less traffic</Text>
+              <Text style={styles.signText}>More friends</Text>
+              <Text style={styles.signText}>Greener city</Text>
+            </View>
+          </View>
+        </View>
+        <Text style={styles.sectionTitle}>How do you usually travel?</Text>
+        <View style={styles.choices}>
+          <Pressable
+            style={styles.choice}
+            onPress={() => navigation.navigate("Setup")}
+          >
+            <View style={styles.choiceIcon}>
+              <Ionicons name="briefcase" size={22} color={blue} />
+            </View>
+            <Text style={styles.choiceTitle}>Daily commute</Text>
+            <Text style={styles.choiceCopy}>Office or college route</Text>
+          </Pressable>
+          <Pressable
+            style={styles.choice}
+            onPress={() => navigation.navigate("Setup")}
+          >
+            <View style={styles.choiceIcon}>
+              <Ionicons name="calendar" size={22} color={blue} />
+            </View>
+            <Text style={styles.choiceTitle}>Planned journey</Text>
+            <Text style={styles.choiceCopy}>Scheduled & long distance</Text>
+          </Pressable>
+        </View>
+        <Button
+          label="Plan my journey"
+          onPress={() => navigation.navigate("Setup")}
+        />
+        <Text style={styles.footnote}>A smarter way to get there.</Text>
+      </ScrollView>
+      <StatusBar style="dark" />
+    </SafeAreaView>
+  );
+}
+
+function SetupScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState("");
+  const [days, setDays] = useState(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+  const [vehicle, setVehicle] = useState("Any");
+  const next = () =>
+    step === 6 ? navigation.navigate("Matches") : setStep(step + 1);
+  const labels = [
+    "Your profile",
+    "Your route",
+    "Your destination",
+    "Your routine",
+    "Your ride",
+    "All set!",
+  ];
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.setup}>
+        <View style={styles.setupTop}>
+          <Pressable
+            onPress={() => (step > 1 ? setStep(step - 1) : navigation.goBack())}
+          >
+            <Ionicons name="arrow-back" size={25} color={navy} />
+          </Pressable>
+          <View style={styles.progressTrack}>
+            <View
+              style={[styles.progressFill, { width: `${(step / 6) * 100}%` }]}
+            />
+          </View>
+          <Text style={styles.step}>{step}/6</Text>
+        </View>
+        <Text style={styles.stepLabel}>{labels[step - 1]}</Text>
+        {step === 1 && (
+          <>
+            <Text style={styles.title}>What should we call you?</Text>
+            <Text style={styles.subtitle}>
+              This is the name other commuters will see.
+            </Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name"
+              placeholderTextColor="#91a1b5"
+              style={styles.input}
+            />
+            <View style={styles.tip}>
+              <Ionicons name="sparkles" size={20} color="#f2b632" />
+              <Text style={styles.tipText}>Same people. Smoother days.</Text>
+            </View>
+          </>
+        )}
+        {step === 2 && (
+          <RouteCard
+            title="Set your route"
+            subtitle="Where do you start your journey?"
+            first="Nagole, Hyderabad"
+            second="Add destination"
+          />
+        )}
+        {step === 3 && (
+          <RouteCard
+            title="Where are you going?"
+            subtitle="Search or pick from the map."
+            first="Nagole, Hyderabad"
+            second="Sreenidhi Institute of Science"
+          />
+        )}
+        {step === 4 && (
+          <>
+            <Text style={styles.title}>When do you travel?</Text>
+            <Text style={styles.subtitle}>
+              Tell us your usual days and time.
+            </Text>
+            <Text style={styles.fieldLabel}>Travel days</Text>
+            <View style={styles.dayGrid}>
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <Pressable
+                  key={day}
+                  onPress={() =>
+                    setDays(
+                      days.includes(day)
+                        ? days.filter((item) => item !== day)
+                        : [...days, day],
+                    )
+                  }
+                  style={[styles.day, days.includes(day) && styles.selected]}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      days.includes(day) && styles.selectedText,
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.fieldLabel}>Time</Text>
+            <View style={styles.input}>
+              <Ionicons name="time-outline" size={22} color={blue} />
+              <Text style={styles.inputText}>08:30 AM</Text>
+            </View>
+          </>
+        )}
+        {step === 5 && (
+          <>
+            <Text style={styles.title}>How do you want to travel?</Text>
+            <Text style={styles.subtitle}>
+              Choose your ride and how flexible you are.
+            </Text>
+            <Text style={styles.fieldLabel}>Your ride</Text>
+            <View style={styles.vehicleGrid}>
+              {["Any", "Car", "Bike", "Scooter"].map((item) => (
+                <Pressable
+                  key={item}
+                  onPress={() => setVehicle(item)}
+                  style={[styles.vehicle, vehicle === item && styles.selected]}
+                >
+                  <Ionicons
+                    name={
+                      item === "Any"
+                        ? "people"
+                        : item === "Car"
+                          ? "car"
+                          : item === "Bike"
+                            ? "bicycle"
+                            : "speedometer"
+                    }
+                    size={24}
+                    color={vehicle === item ? blue : muted}
+                  />
+                  <Text style={styles.vehicleText}>{item}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.tip}>
+              <Ionicons name="bulb" size={20} color="#f2b632" />
+              <Text style={styles.tipText}>
+                More options = higher chances of finding a match.
+              </Text>
+            </View>
+          </>
+        )}
+        {step === 6 && (
+          <>
+            <View style={styles.ready}>
+              <Text style={styles.readyEmoji}>✦</Text>
+              <Text style={styles.title}>Your commute is ready!</Text>
+              <Text style={styles.subtitle}>
+                We’ll find people going your way.
+              </Text>
+            </View>
+            <View style={styles.summary}>
+              <Text style={styles.summaryTitle}>
+                Nagole → Sreenidhi Institute
+              </Text>
+              <Text style={styles.summaryLine}>Mon – Fri · 8:30 AM</Text>
+              <Text style={styles.summaryLine}>Any vehicle · 5 km radius</Text>
+            </View>
+          </>
+        )}
+        <Button
+          label={
+            step === 6
+              ? "Find people going your way"
+              : step === 1
+                ? "Continue"
+                : "Next"
+          }
+          onPress={next}
+        />
+      </ScrollView>
+      <StatusBar style="dark" />
+    </SafeAreaView>
+  );
+}
+
+function RouteCard({
+  title,
+  subtitle,
+  first,
+  second,
+}: {
+  title: string;
+  subtitle: string;
+  first: string;
+  second: string;
+}) {
+  return (
+    <>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+      <View style={styles.map}>
+        <View style={styles.routeLine} />
+        <View style={styles.pinStart}>
+          <Ionicons name="location" size={25} color={blue} />
+        </View>
+        <View style={styles.pinEnd}>
+          <Ionicons name="location" size={25} color="#ee6674" />
+        </View>
+        <Text style={styles.mapLabel}>{first}</Text>
+        <Text style={[styles.mapLabel, styles.mapLabelEnd]}>{second}</Text>
+      </View>
+      <View style={styles.locationRow}>
+        <Ionicons name="navigate-circle" size={22} color={blue} />
+        <Text style={styles.locationText}>{first}</Text>
+        <Ionicons name="close-circle" size={20} color="#92a2b7" />
+      </View>
+    </>
+  );
+}
+
+function MatchesScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.matches}>
+        <View style={styles.topline}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={25} color={navy} />
+          </Pressable>
+          <Logo />
+          <View style={{ width: 25 }} />
+        </View>
+        <Text style={styles.eyebrow}>YOUR MATCHES</Text>
+        <Text style={styles.title}>People going your way</Text>
+        <Text style={styles.subtitle}>
+          Ranked by route overlap, timing, and direction.
+        </Text>
+        <View style={styles.matchMap}>
+          <View style={styles.routeLine} />
+          <View style={styles.sharedLine} />
+          <Ionicons
+            style={styles.matchPin}
+            name="location"
+            size={29}
+            color={blue}
+          />
+          <Ionicons
+            style={styles.matchPinEnd}
+            name="location"
+            size={29}
+            color="#ee6674"
+          />
+        </View>
+        <MatchCard
+          name="Aarav Sharma"
+          detail="Office commute · 8:25 AM"
+          score="96% match"
+        />
+        <MatchCard
+          name="Nisha Reddy"
+          detail="Daily commute · 8:35 AM"
+          score="89% match"
+        />
+        <Button secondary label="Reset combined view" onPress={() => {}} />
+      </ScrollView>
+      <StatusBar style="dark" />
+    </SafeAreaView>
+  );
+}
+function MatchCard({
+  name,
+  detail,
+  score,
+}: {
+  name: string;
+  detail: string;
+  score: string;
+}) {
+  return (
+    <View style={styles.matchCard}>
+      <View style={styles.person}>
+        <View style={styles.personAvatar}>
+          <Ionicons name="person" size={20} color={blue} />
+        </View>
+        <View>
+          <Text style={styles.choiceTitle}>{name}</Text>
+          <Text style={styles.choiceCopy}>{detail}</Text>
+        </View>
+      </View>
+      <View style={styles.score}>
+        <Text style={styles.scoreText}>{score}</Text>
+        <Text style={styles.scoreLabel}>shared route</Text>
+      </View>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Setup" component={SetupScreen} />
+        <Stack.Screen name="Matches" component={MatchesScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: bg },
+  home: { padding: 22, paddingBottom: 36 },
+  setup: { padding: 22, paddingBottom: 34 },
+  matches: { padding: 22, paddingBottom: 36 },
+  topline: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 25,
+  },
+  logo: { color: navy, fontSize: 23, fontWeight: "800", letterSpacing: -0.8 },
+  avatar: {
+    width: 39,
+    height: 39,
+    borderRadius: 20,
+    backgroundColor: "#e4f0ff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  hero: {
+    backgroundColor: "#e9f4ff",
+    borderRadius: 28,
+    padding: 24,
+    minHeight: 360,
+    overflow: "hidden",
+    marginBottom: 24,
+  },
+  cloud: {
+    position: "absolute",
+    right: -20,
+    top: 34,
+    width: 130,
+    height: 65,
+    borderRadius: 40,
+    backgroundColor: "#d7eaff",
+  },
+  eyebrow: {
+    color: blue,
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 12,
+  },
+  heroTitle: {
+    color: navy,
+    fontSize: 36,
+    lineHeight: 39,
+    fontWeight: "800",
+    letterSpacing: -1.2,
+  },
+  heroCopy: {
+    color: muted,
+    fontSize: 16,
+    lineHeight: 23,
+    marginTop: 12,
+    maxWidth: 290,
+  },
+  road: {
+    height: 106,
+    marginTop: 18,
+    backgroundColor: "#cce7dc",
+    borderRadius: 20,
+    position: "relative",
+    overflow: "hidden",
+  },
+  car: { position: "absolute", left: 32, bottom: 15 },
+  sign: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+    backgroundColor: "#438f87",
+    padding: 8,
+    borderRadius: 10,
+    gap: 4,
+  },
+  signText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  sectionTitle: {
+    color: navy,
+    fontSize: 21,
+    fontWeight: "800",
+    marginBottom: 13,
+  },
+  choices: { flexDirection: "row", gap: 12, marginBottom: 20 },
+  choice: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#dce8f6",
+  },
+  choiceIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#eaf3ff",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  choiceTitle: { color: navy, fontSize: 15, fontWeight: "800" },
+  choiceCopy: { color: muted, fontSize: 12, marginTop: 4, lineHeight: 17 },
+  button: {
+    height: 55,
+    backgroundColor: blue,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+    shadowColor: blue,
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 4,
+  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "800" },
+  secondaryButton: { backgroundColor: "#e8f2ff", shadowOpacity: 0 },
+  secondaryText: { color: blue },
+  footnote: { textAlign: "center", color: muted, fontSize: 12, marginTop: 12 },
+  setupTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 28,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 4,
+    backgroundColor: "#dce8f7",
+    flex: 1,
+  },
+  progressFill: { height: 6, borderRadius: 4, backgroundColor: blue },
+  step: { color: muted, fontSize: 13, fontWeight: "700" },
+  stepLabel: { color: muted, fontSize: 15, marginBottom: 12 },
+  title: {
+    color: navy,
+    fontSize: 29,
+    lineHeight: 34,
+    fontWeight: "800",
+    letterSpacing: -0.8,
+    marginBottom: 6,
+  },
+  subtitle: { color: muted, fontSize: 16, lineHeight: 23, marginBottom: 24 },
+  input: {
+    minHeight: 56,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#d8e3f1",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    color: navy,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  inputText: { color: navy, fontSize: 16, fontWeight: "600" },
+  tip: {
+    backgroundColor: "#eaf3ff",
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    marginVertical: 22,
+  },
+  tipText: { flex: 1, color: "#4d6380", fontSize: 14, lineHeight: 20 },
+  fieldLabel: {
+    color: navy,
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  dayGrid: { flexDirection: "row", flexWrap: "wrap", gap: 9, marginBottom: 18 },
+  day: {
+    width: "28%",
+    minHeight: 48,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#d8e3f1",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dayText: { color: navy, fontWeight: "700" },
+  selected: { borderColor: blue, backgroundColor: "#eaf3ff" },
+  selectedText: { color: blue },
+  vehicleGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 18,
+  },
+  vehicle: {
+    width: "47%",
+    minHeight: 78,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#d8e3f1",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+  vehicleText: { color: navy, fontWeight: "700" },
+  map: {
+    height: 230,
+    borderRadius: 22,
+    backgroundColor: "#dcefe7",
+    marginBottom: 14,
+    overflow: "hidden",
+    position: "relative",
+  },
+  routeLine: {
+    position: "absolute",
+    height: 4,
+    width: "68%",
+    backgroundColor: blue,
+    top: "53%",
+    left: "16%",
+    transform: [{ rotate: "-14deg" }],
+    borderRadius: 5,
+  },
+  sharedLine: {
+    position: "absolute",
+    height: 9,
+    width: "43%",
+    backgroundColor: "#64c8b1",
+    top: "49%",
+    left: "28%",
+    transform: [{ rotate: "-14deg" }],
+    borderRadius: 6,
+    opacity: 0.8,
+  },
+  pinStart: { position: "absolute", left: "10%", top: "43%" },
+  pinEnd: { position: "absolute", right: "11%", top: "27%" },
+  mapLabel: {
+    position: "absolute",
+    left: 16,
+    top: 16,
+    color: navy,
+    fontSize: 12,
+    fontWeight: "700",
+    backgroundColor: "#fff",
+    padding: 8,
+    borderRadius: 10,
+  },
+  mapLabelEnd: { left: "auto", right: 12, top: "65%", maxWidth: 135 },
+  locationRow: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 22,
+  },
+  locationText: { color: navy, fontWeight: "700", flex: 1 },
+  ready: { alignItems: "center", marginTop: 35, marginBottom: 22 },
+  readyEmoji: { fontSize: 52, color: "#f2b632", marginBottom: 14 },
+  summary: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 19,
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: "#dce8f6",
+  },
+  summaryTitle: {
+    color: navy,
+    fontWeight: "800",
+    fontSize: 17,
+    marginBottom: 9,
+  },
+  summaryLine: { color: muted, fontSize: 14, marginTop: 5 },
+  matchMap: {
+    height: 230,
+    borderRadius: 23,
+    backgroundColor: "#dcefe7",
+    overflow: "hidden",
+    position: "relative",
+    marginVertical: 20,
+  },
+  matchPin: { position: "absolute", left: "13%", top: "45%" },
+  matchPinEnd: { position: "absolute", right: "14%", top: "23%" },
+  matchCard: {
+    backgroundColor: "#fff",
+    borderRadius: 17,
+    padding: 15,
+    marginBottom: 11,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#dce8f6",
+  },
+  person: { flexDirection: "row", alignItems: "center", gap: 10 },
+  personAvatar: {
+    width: 43,
+    height: 43,
+    borderRadius: 22,
+    backgroundColor: "#eaf3ff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  score: { alignItems: "flex-end" },
+  scoreText: { color: blue, fontWeight: "800", fontSize: 16 },
+  scoreLabel: { color: muted, fontSize: 11, marginTop: 3 },
+});
+
+// Visual reference: supplied GoTogether onboarding boards from September 2026.
+// The app uses native cards and controls rather than embedding the reference photos.
